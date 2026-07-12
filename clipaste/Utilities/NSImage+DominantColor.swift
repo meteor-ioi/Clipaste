@@ -183,7 +183,7 @@ extension NSImage {
     }
 }
 
-private nonisolated struct ColorBin {
+private struct ColorBin {
     private(set) var totalWeight: Double = 0
     private var weightedRed: Double = 0
     private var weightedGreen: Double = 0
@@ -205,7 +205,7 @@ private nonisolated struct ColorBin {
     }
 }
 
-private nonisolated struct RGBColor {
+private struct RGBColor {
     let red: Double
     let green: Double
     let blue: Double
@@ -233,7 +233,7 @@ private nonisolated struct RGBColor {
     }
 }
 
-private nonisolated struct HSVColor {
+private struct HSVColor {
     let hue: Double
     let saturation: Double
     let value: Double
