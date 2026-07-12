@@ -455,8 +455,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
+				kind = exactVersion;
+				version = 2.3.0;
 			};
 		};
 		6A1C7B0D34D24A8A00A1B2C3 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
