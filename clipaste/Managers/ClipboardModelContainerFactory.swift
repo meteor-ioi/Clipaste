@@ -1,0 +1,133 @@
+import Foundation
+import SwiftData
+
+struct ClipboardRuntime: @unchecked Sendable {
+    let syncEnabled: Bool
+    let container: ModelContainer
+    let storage: StorageManager
+}
+
+enum ClipboardContainerFactoryError: LocalizedError {
+    case cloudStoreResetFailed(initialError: Error, resetError: Error)
+    case cloudStoreRecoveryFailed(initialError: Error, retryError: Error)
+
+    var errorDescription: String? {
+        switch self {
+        case let .cloudStoreResetFailed(initialError, resetError):
+            return "iCloud 本地缓存重置失败。初始错误：\(initialError.localizedDescription)；重置错误：\(resetError.localizedDescription)"
+        case let .cloudStoreRecoveryFailed(initialError, retryError):
+            return "iCloud 本地缓存已重建，但云容器仍无法启动。初始错误：\(initialError.localizedDescription)；重试错误：\(retryError.localizedDescription)"
+        }
+    }
+}
+
+final class ClipboardModelContainerFactory: @unchecked Sendable {
+    nonisolated static let shared = ClipboardModelContainerFactory()
+    nonisolated static let cloudKitContainerIdentifier = "iCloud.com.gangz1o.clipaste"
+    #if DEBUG
+    nonisolated static let cloudKitEnvironmentName = "Development"
+    #else
+    nonisolated static let cloudKitEnvironmentName = "Production"
+    #endif
+
+    private nonisolated init() {}
+
+    nonisolated func makeRuntime(syncEnabled: Bool) throws -> ClipboardRuntime {
+        do {
+            return try buildRuntime(syncEnabled: syncEnabled)
+        } catch {
+            guard syncEnabled else { throw error }
+
+            let initialError = error
+
+            do {
+                try Self.resetStoreArtifacts(at: Self.cloudStoreURL)
+            } catch {
+                throw ClipboardContainerFactoryError.cloudStoreResetFailed(
+                    initialError: initialError,
+                    resetError: error
+                )
+            }
+
+            do {
+                return try buildRuntime(syncEnabled: syncEnabled)
+            } catch {
+                throw ClipboardContainerFactoryError.cloudStoreRecoveryFailed(
+                    initialError: initialError,
+                    retryError: error
+                )
+            }
+        }
+    }
+
+    nonisolated func makeContainer(syncEnabled: Bool) throws -> ModelContainer {
+        let schema = Schema([ClipboardRecord.self, ClipboardGroupModel.self, SyncAnchor.self])
+        let configuration = ModelConfiguration(
+            syncEnabled ? "ClipboardCloudStore" : "ClipboardLocalStore",
+            schema: schema,
+            url: syncEnabled ? Self.cloudStoreURL : Self.localStoreURL,
+            cloudKitDatabase: syncEnabled ? .private(Self.cloudKitContainerIdentifier) : .none
+        )
+
+        return try ModelContainer(for: schema, configurations: [configuration])
+    }
+
+    private nonisolated func buildRuntime(syncEnabled: Bool) throws -> ClipboardRuntime {
+        let container = try makeContainer(syncEnabled: syncEnabled)
+        let storage = StorageManager(modelContainer: container)
+        return ClipboardRuntime(syncEnabled: syncEnabled, container: container, storage: storage)
+    }
+
+    private nonisolated static var applicationSupportDirectory: URL {
+        let fileManager = FileManager.default
+        let baseDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? fileManager.temporaryDirectory
+        let bundleIdentifier = Bundle.main.bundleIdentifier ?? "clipaste"
+        let directory = baseDirectory.appendingPathComponent(bundleIdentifier, isDirectory: true)
+
+        if fileManager.fileExists(atPath: directory.path) == false {
+            try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+
+        return directory
+    }
+
+    private nonisolated static var storesDirectory: URL {
+        let directory = applicationSupportDirectory.appendingPathComponent("Stores", isDirectory: true)
+
+        if FileManager.default.fileExists(atPath: directory.path) == false {
+            try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+
+        return directory
+    }
+
+    nonisolated static var localStoreURL: URL {
+        storesDirectory.appendingPathComponent("clipboard-local.store", isDirectory: false)
+    }
+
+    nonisolated static var cloudStoreURL: URL {
+        storesDirectory.appendingPathComponent("clipboard-cloud.store", isDirectory: false)
+    }
+
+    nonisolated static func resetCloudStoreArtifacts() throws {
+        try resetStoreArtifacts(at: cloudStoreURL)
+    }
+
+    private nonisolated static func resetStoreArtifacts(at storeURL: URL) throws {
+        let fileManager = FileManager.default
+        let directoryURL = storeURL.deletingLastPathComponent()
+        let storePrefix = storeURL.lastPathComponent
+
+        guard fileManager.fileExists(atPath: directoryURL.path) else { return }
+
+        let candidateURLs = try fileManager.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: nil
+        )
+
+        for candidateURL in candidateURLs where candidateURL.lastPathComponent.hasPrefix(storePrefix) {
+            try fileManager.removeItem(at: candidateURL)
+        }
+    }
+}

@@ -1,0 +1,38 @@
+DerivedData/
+build/
+Build/
+*.xcworkspace/
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+
+# Swift Package Manager
+.build/
+
+# CocoaPods
+Pods/
+*.xcscmblueprint
+
+# Carthage
+Carthage/Build/
+
+# Xcode's per-user settings
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# macOS generic
+.DS_Store
+
+# openspec
+.agent/
+openspec/
+.codex/
+.cursor/
+.agents/
+.gemini/
+.claude/
+.vscode/
+.adal/
+
