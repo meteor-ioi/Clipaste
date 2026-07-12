@@ -2,7 +2,7 @@ import AppKit
 import CoreImage
 import Foundation
 
-private nonisolated enum AppIconColorExtraction {
+private enum AppIconColorExtraction {
     static let workingSize = 32
     static let minimumAlpha: Double = 0.18
     static let minimumSaturation: Double = 0.20

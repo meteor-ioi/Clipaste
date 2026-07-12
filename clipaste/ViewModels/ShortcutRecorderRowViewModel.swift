@@ -4,7 +4,7 @@ import Carbon.HIToolbox
 import Foundation
 import KeyboardShortcuts
 
-nonisolated final class ShortcutRecorderRowViewModel: ObservableObject {
+final class ShortcutRecorderRowViewModel: ObservableObject {
     @Published private(set) var shortcut: KeyboardShortcuts.Shortcut?
     @Published private(set) var isRecording = false
 

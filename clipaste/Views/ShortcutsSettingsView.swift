@@ -5,13 +5,15 @@ import SwiftData
 struct ShortcutsSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
 
-    @Query(filter: #Predicate<ClipboardGroupModel> { $0.deletedAt == nil }, sort: \.sortOrder)
+    @Query(filter: #Predicate<ClipboardGroupModel> { $0.deletedAt == nil }, sort: \ClipboardGroupModel.sortOrder)
     private var groups: [ClipboardGroupModel]
 
-    @Query(sort: \.timestamp, order: .reverse)
+    @Query(sort: \ClipboardRecord.timestamp, order: .reverse)
     private var allRecords: [ClipboardRecord]
 
     @State private var selectedGroupID: String = ""
+
+    init() {}
 
     var body: some View {
         Form {
