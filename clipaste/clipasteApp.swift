@@ -164,6 +164,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // 面板预热只影响首屏性能，不影响功能，延后一拍让 AppKit/SwiftUI 先完成基础启动。
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             ClipboardPanelManager.shared.preparePanelIfNeeded()
+            SnippetShortcutManager.shared.start()
         }
 
         // Sparkle 在 menubar/accessory 场景下不适合跟冷启动抢主线程和窗口时序；

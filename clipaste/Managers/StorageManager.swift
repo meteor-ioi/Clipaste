@@ -25,6 +25,8 @@ private struct ClipboardRecordSnapshot: Sendable {
     let sourceDeviceName: String?
     let captureMethodRawValue: String
     let captureSessionID: UUID?
+    let shortcutName: String?
+    let isSnippet: Bool
 
     /// Build a snapshot without touching any `@Attribute(.externalStorage)`
     /// property on the record. External-storage getters trap with EXC_BAD_ACCESS
@@ -73,7 +75,9 @@ private struct ClipboardRecordSnapshot: Sendable {
             sourcePlatformRawValue: record.sourcePlatformRawValue,
             sourceDeviceName: record.sourceDeviceName,
             captureMethodRawValue: record.captureMethodRawValue,
-            captureSessionID: record.captureSessionID
+            captureSessionID: record.captureSessionID,
+            shortcutName: record.shortcutName,
+            isSnippet: record.isSnippet
         )
     }
 }
@@ -312,6 +316,14 @@ final class StorageManager {
         let actor = self.storeActor
         spawnTrackedTask(priority: .userInitiated) {
             await actor.updatePinStatus(hash: hash, isPinned: isPinned)
+        }
+    }
+
+    nonisolated
+    func updateRecordShortcut(hash: String, shortcutName: String?, isSnippet: Bool) {
+        let actor = self.storeActor
+        spawnTrackedTask(priority: .userInitiated) {
+            await actor.updateRecordShortcut(hash: hash, shortcutName: shortcutName, isSnippet: isSnippet)
         }
     }
 
@@ -687,7 +699,9 @@ final class StorageManager {
             sourcePlatformRawValue: record.sourcePlatformRawValue,
             sourceDeviceName: record.sourceDeviceName,
             captureMethodRawValue: record.captureMethodRawValue,
-            captureSessionID: record.captureSessionID
+            captureSessionID: record.captureSessionID,
+            shortcutName: record.shortcutName,
+            isSnippet: record.isSnippet
         )
     }
 
@@ -992,7 +1006,7 @@ actor ClipboardStoreActor {
 
     func cleanUpExpiredRecords(before expirationDate: Date) {
         let descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate { $0.timestamp < expirationDate }
+            predicate: #Predicate { $0.timestamp < expirationDate && $0.isSnippet == false }
         )
 
         do {
@@ -1037,7 +1051,7 @@ actor ClipboardStoreActor {
 
     func deleteUnpinnedRecords() {
         let descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { $0.isPinned == false }
+            predicate: #Predicate<ClipboardRecord> { $0.isPinned == false && $0.isSnippet == false }
         )
         do {
             let records = try modelContext.fetch(descriptor)
@@ -1052,6 +1066,30 @@ actor ClipboardStoreActor {
             NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
         } catch {
             print("❌ [ClipboardStoreActor] 清空失败: \(error)")
+        }
+    }
+
+    func updateRecordShortcut(hash: String, shortcutName: String?, isSnippet: Bool) {
+        let descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate<ClipboardRecord> { $0.contentHash == hash }
+        )
+        do {
+            if let record = try modelContext.fetch(descriptor).first {
+                record.shortcutName = shortcutName
+                record.isSnippet = isSnippet
+                try markSyncAnchorUpdated()
+                try modelContext.save()
+                NotificationCenter.default.post(
+                    name: .clipboardRecordDidChange,
+                    object: nil,
+                    userInfo: [
+                        "contentHash": hash,
+                        "kind": ClipboardRecordChangeKind.content.rawValue
+                    ]
+                )
+            }
+        } catch {
+            print("❌ [ClipboardStoreActor] 快捷键更新失败: \(error)")
         }
     }
 

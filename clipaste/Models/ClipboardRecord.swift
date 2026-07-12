@@ -30,6 +30,8 @@ final class ClipboardRecord {
     var sourceDeviceName: String?
     var captureMethodRawValue: String = "monitor"
     var captureSessionID: UUID?
+    var shortcutName: String?
+    var isSnippet: Bool = false
 
     init(
         id: UUID = UUID(),
@@ -55,7 +57,9 @@ final class ClipboardRecord {
         sourcePlatformRawValue: String = "macOS",
         sourceDeviceName: String? = nil,
         captureMethodRawValue: String = "monitor",
-        captureSessionID: UUID? = nil
+        captureSessionID: UUID? = nil,
+        shortcutName: String? = nil,
+        isSnippet: Bool = false
     ) {
         self.id = id
         self.timestamp = timestamp
@@ -84,5 +88,7 @@ final class ClipboardRecord {
         self.sourceDeviceName = sourceDeviceName
         self.captureMethodRawValue = captureMethodRawValue
         self.captureSessionID = captureSessionID
+        self.shortcutName = shortcutName
+        self.isSnippet = isSnippet
     }
 }

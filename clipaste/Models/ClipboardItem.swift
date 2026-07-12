@@ -105,6 +105,8 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
     let sourceDeviceName: String?
     let captureMethodRawValue: String
     let captureSessionID: UUID?
+    let shortcutName: String?
+    let isSnippet: Bool
 
     // ⚠️ 性能核心：全部为 let 常量，初始化时一次性计算完毕，SwiftUI 重绘读取耗时 = 0
     let previewText: String?
@@ -139,7 +141,9 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
         sourcePlatformRawValue: String = "macOS",
         sourceDeviceName: String? = nil,
         captureMethodRawValue: String = "monitor",
-        captureSessionID: UUID? = nil
+        captureSessionID: UUID? = nil,
+        shortcutName: String? = nil,
+        isSnippet: Bool = false
     ) {
         let normalizedGroupIDs = ClipboardItem.normalizedGroupIDs(primaryGroupID: groupId, groupIDs: groupIDs)
 
@@ -181,6 +185,8 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
         self.sourceDeviceName = sourceDeviceName
         self.captureMethodRawValue = captureMethodRawValue
         self.captureSessionID = captureSessionID
+        self.shortcutName = shortcutName
+        self.isSnippet = isSnippet
 
         // --- 性能隔离区：只在初始化时执行一次，使用 utf8.count 极速字节级判断 ---
         let sourceText = rawText ?? (textPreview.isEmpty ? nil : textPreview)
@@ -224,7 +230,9 @@ extension ClipboardItem {
         lhs.groupIDs == rhs.groupIDs &&
         lhs.hasRTF == rhs.hasRTF &&
         lhs.hasImagePreview == rhs.hasImagePreview &&
-        lhs.hasImageData == rhs.hasImageData
+        lhs.hasImageData == rhs.hasImageData &&
+        lhs.shortcutName == rhs.shortcutName &&
+        lhs.isSnippet == rhs.isSnippet
     }
 
     func hash(into hasher: inout Hasher) {
