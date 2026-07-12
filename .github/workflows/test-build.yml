@@ -21,7 +21,7 @@ jobs:
       - name: Build unsigned app
         run: |
           xcodebuild -project clipaste.xcodeproj \
-                     -scheme clipaste \
+                     -scheme Clipaste \
                      -configuration Debug \
                      -derivedDataPath build_derived \
                      CODE_SIGNING_ALLOWED=NO \
