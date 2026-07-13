@@ -106,7 +106,7 @@ private extension ShortcutsSettingsView {
 
 // MARK: - Shortcut Recorder Row
 
-private struct ShortcutRecorderRow: View {
+struct ShortcutRecorderRow: View {
     let title: LocalizedStringKey
     @StateObject private var viewModel: ShortcutRecorderRowViewModel
 
@@ -177,7 +177,7 @@ private extension ShortcutsSettingsView {
                 }
             }
         } header: {
-            SettingsSectionHeader(title: "Snippet Shortcuts (常用语一键粘贴快捷键)")
+            SettingsSectionHeader(title: "常用语粘贴快捷键")
         } footer: {
             SettingsSectionFooter {
                 Text("为此常用语分组内的条目指定全局快捷键。在任何输入框中按下对应快捷键，即可静默粘贴该条目的内容。")

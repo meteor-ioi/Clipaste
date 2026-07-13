@@ -68,6 +68,7 @@ final class ClipboardViewModel: ObservableObject {
     @Published var selectedGroupId: String? = nil
     @Published var draggedGroup: ClipboardGroupItem? = nil
     @Published var titleEditorItem: ClipboardItem? = nil
+    @Published var shortcutEditorItem: ClipboardItem? = nil
     @Published var quickPasteModifier: ModifierKey = ModifierKey.quickPastePreference()
     @Published var plainTextModifier: ModifierKey = ModifierKey.plainTextPreference()
     @Published var isQuickPasteModifierHeld: Bool = false

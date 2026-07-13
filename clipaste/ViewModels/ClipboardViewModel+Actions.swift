@@ -362,6 +362,14 @@ extension ClipboardViewModel {
         titleEditorItem = nil
     }
 
+    func editItemShortcut(item: ClipboardItem) {
+        shortcutEditorItem = item
+    }
+
+    func dismissShortcutEditor() {
+        shortcutEditorItem = nil
+    }
+
     func saveCustomTitle(for item: ClipboardItem, title: String?) {
         let normalizedTitle = title?.trimmingCharacters(in: .whitespacesAndNewlines)
         let resolvedTitle = normalizedTitle?.isEmpty == false ? normalizedTitle : nil

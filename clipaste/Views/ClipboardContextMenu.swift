@@ -249,6 +249,12 @@ extension View {
             Label(item.hasCustomTitle ? "Edit Title" : "Add Title", systemImage: "character.cursor.ibeam")
         }
 
+        Button {
+            viewModel.editItemShortcut(item: item)
+        } label: {
+            Label("设置快捷键", systemImage: "keyboard")
+        }
+
         Divider()
 
         // 4. Preview & share

@@ -144,6 +144,9 @@ struct ClipboardMainView: View {
                     viewModel.saveCustomTitle(for: item, title: title)
                 }
             }
+            .sheet(item: shortcutEditorItemBinding, onDismiss: viewModel.dismissShortcutEditor) { item in
+                ClipboardItemShortcutEditorSheet(item: item)
+            }
     }
 
     @ViewBuilder
@@ -267,6 +270,19 @@ struct ClipboardMainView: View {
                     viewModel.titleEditorItem = newValue
                 } else {
                     viewModel.dismissTitleEditor()
+                }
+            }
+        )
+    }
+
+    private var shortcutEditorItemBinding: Binding<ClipboardItem?> {
+        Binding(
+            get: { viewModel.shortcutEditorItem },
+            set: { newValue in
+                if let newValue {
+                    viewModel.shortcutEditorItem = newValue
+                } else {
+                    viewModel.dismissShortcutEditor()
                 }
             }
         )
